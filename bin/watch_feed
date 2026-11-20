@@ -1,0 +1,32 @@
+#!/bin/sh
+# Main process of the waiting-list service (saved searches):
+#   docker run -d --name app --init --restart unless-stopped sailing-route-finder bin/watch_feed
+#
+# Runs one pass at start (the feed may have changed while the container was down), then
+# runs a pass every time the feed file is replaced. Change detection is the Linux kernel's
+# inotify, through inotifywait from inotify-tools (installed in the Dockerfile).
+# What each pass did is written to data/logs/route_finder.log.
+
+cd "$(dirname "$0")/.." || exit 1
+
+feed_path="${FEED_PATH:-data/response.json}"
+feed_dir=$(dirname "$feed_path")
+feed_name=$(basename "$feed_path")
+
+echo "watch_feed: initial pass"
+bin/process_waiting_list
+
+echo "watch_feed: watching $feed_path"
+
+# The directory is watched, not the file: replacing a file (mv, docker cp, editors)
+# creates a new inode that a watch on the old file would not follow.
+#   close_write - a writer finished writing the file;
+#   moved_to    - a file was moved into the directory.
+# Events that arrive during a pass wait in the pipe; an extra pass is harmless.
+inotifywait -m -e close_write -e moved_to --format '%f' "$feed_dir" |
+while read -r changed_file; do
+  if [ "$changed_file" = "$feed_name" ]; then
+    echo "watch_feed: $feed_name changed"
+    bin/process_waiting_list
+  fi
+done

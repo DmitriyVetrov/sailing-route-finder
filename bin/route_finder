@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Entry point: reads one search from stdin and prints the route as JSON to stdout.
+# Three command-line arguments replace the three stdin lines (handy for debugging).
+
+require_relative "../lib/route_finder"
+
+app = RouteFinder::Application.new(RouteFinder::Application.feed_path_from(ENV), "route_finder")
+
+if ARGV.length == 3
+  require "stringio"
+  cli_input = StringIO.new(ARGV.join("\n") + "\n")
+else
+  cli_input = $stdin
+end
+
+cli = RouteFinder::CLI.new(
+  input: cli_input,
+  output: $stdout,
+  error_output: $stderr,
+  factory: app.factory,
+  presenter: app.presenter,
+  waiting_list: app.waiting_list,
+  logger: app.logger
+)
+exit(cli.run)

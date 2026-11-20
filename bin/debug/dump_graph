@@ -1,0 +1,76 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Debug tool, not part of the CLI contract.
+# Prints the time-expanded event graph for one search: nodes and outgoing edges per port,
+# plus the edges from SOURCE and into SINK.
+#
+# Usage: bin/debug/dump_graph [origin [destination [feed_path]]]
+# Default: CNSHA NLRTM data/response.json
+
+require "logger"
+require_relative "../../lib/route_finder"
+
+default_path = File.expand_path("../../data/response.json", __dir__)
+
+origin_port = ARGV.fetch(0, "CNSHA")
+destination_port = ARGV.fetch(1, "NLRTM")
+feed_path = ARGV.fetch(2, default_path)
+
+# Dropped records are printed straight to the terminal.
+logger = Logger.new($stderr)
+resolver = RouteFinder::Feed::RateResolvers::HighestRate.new
+loader = RouteFinder::Feed::Loader.from_file(feed_path, resolver, logger)
+graph = RouteFinder::Graph::TimeExpandedGraph.new(loader.sailings, origin_port, destination_port)
+
+# "ESBCN 02-12"; the sample feed covers a single year.
+def short_name(node)
+  return "#{node.port} #{node.date.strftime("%m-%d")}"
+end
+
+def edge_label(edge)
+  if edge.sailing?
+    return edge.sailing.sailing_code
+  end
+  return "wait"
+end
+
+sailing_edges = graph.edges.select do |edge|
+  edge.sailing?
+end
+waiting_edges = graph.edges.select do |edge|
+  edge.waiting?
+end
+
+puts "route: #{origin_port} -> #{destination_port}"
+puts "event nodes: #{graph.nodes.length}, sailing edges: #{sailing_edges.length}, " \
+     "waiting edges: #{waiting_edges.length}"
+puts
+
+graph.ports.each do |port|
+  puts port
+  graph.nodes_of(port).each do |node|
+    puts "  #{node.date.strftime("%m-%d")}"
+    graph.edges_from(node).each do |edge|
+      if edge.endpoint?
+        next
+      end
+      puts "      --#{edge_label(edge)}--> #{short_name(edge.to)}"
+    end
+  end
+  puts
+end
+
+source_targets = []
+graph.edges_from(graph.source).each do |edge|
+  source_targets.push(short_name(edge.to))
+end
+puts "SOURCE -> #{source_targets.join(", ")}"
+
+sink_sources = []
+graph.edges.each do |edge|
+  if edge.endpoint? && edge.to == graph.sink
+    sink_sources.push(short_name(edge.from))
+  end
+end
+puts "SINK   <- #{sink_sources.join(", ")}"

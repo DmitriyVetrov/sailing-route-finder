@@ -1,0 +1,22 @@
+# Not sent to `docker build`, so never part of the image. Same syntax as .gitignore.
+.git
+
+# Personal files and local tooling.
+README.RU.md
+CLAUDE.local.md
+docs/Phaza*.md
+scripts/
+.claude/
+.vscode/
+.directory
+*.zip
+
+# Bundler artefacts from the host.
+.bundle/
+vendor/bundle/
+
+# Runtime data of local runs: the service starts with an empty waiting list and log.
+data/waiting_list/
+data/notifications/
+data/logs/
+coverage/

@@ -1,0 +1,20 @@
+# Personal, kept locally and never part of the submission.
+/README.RU.md
+/CLAUDE.local.md
+/docs/Phaza*.md
+/scripts/snapshot-phase.sh
+/.claude/
+/.vscode/
+.directory
+
+# Bundler settings and gems installed on the host, if any.
+/.bundle/
+/vendor/bundle/
+
+# Runtime data of local runs: waiting list, notifications and the log (saved searches).
+/data/waiting_list/
+/data/notifications/
+/data/logs/
+
+# Coverage report written by the test suite.
+/coverage/

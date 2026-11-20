@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Debug tool, not part of the CLI contract.
+# Prints every clean sailing of the feed with its dates, duration and EUR cost.
+#
+# Usage: bin/debug/cost_table [feed_path]   (default: data/response.json)
+
+require "logger"
+require_relative "../../lib/route_finder"
+
+default_path = File.expand_path("../../data/response.json", __dir__)
+feed_path = ARGV.fetch(0, default_path)
+
+# Dropped records are printed straight to the terminal.
+logger = Logger.new($stderr)
+resolver = RouteFinder::Feed::RateResolvers::HighestRate.new
+loader = RouteFinder::Feed::Loader.from_file(feed_path, resolver, logger)
+cost_calculator = RouteFinder::Feed::EurCostCalculator.new(loader.rate_book, loader.exchange_rates)
+
+puts "code  route          dep -> arr         days     EUR"
+loader.sailings.each do |sailing|
+  eur_cost = cost_calculator.cost_of(sailing)
+  route = "#{sailing.origin_port}->#{sailing.destination_port}"
+  dates = "#{sailing.departure_date.strftime("%m-%d")} -> #{sailing.arrival_date.strftime("%m-%d")}"
+  puts "#{sailing.sailing_code.ljust(6)}" \
+       "#{route.ljust(15)}" \
+       "#{dates.ljust(19)}" \
+       "#{sailing.duration_days.to_s.rjust(4)}" \
+       "#{eur_cost.to_display_string.rjust(10)}"
+end

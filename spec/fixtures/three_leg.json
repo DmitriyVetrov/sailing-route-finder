@@ -1,0 +1,47 @@
+{
+  "sailings": [
+    {
+      "origin_port": "AAAAA",
+      "destination_port": "DDDDD",
+      "departure_date": "2022-01-01",
+      "arrival_date": "2022-01-30",
+      "sailing_code": "DIR1"
+    },
+    {
+      "origin_port": "BBBBB",
+      "destination_port": "DDDDD",
+      "departure_date": "2022-01-06",
+      "arrival_date": "2022-01-28",
+      "sailing_code": "TWO1"
+    },
+    {
+      "origin_port": "AAAAA",
+      "destination_port": "BBBBB",
+      "departure_date": "2022-01-01",
+      "arrival_date": "2022-01-05",
+      "sailing_code": "LEG1"
+    },
+    {
+      "origin_port": "BBBBB",
+      "destination_port": "CCCCC",
+      "departure_date": "2022-01-06",
+      "arrival_date": "2022-01-12",
+      "sailing_code": "LEG2"
+    },
+    {
+      "origin_port": "CCCCC",
+      "destination_port": "DDDDD",
+      "departure_date": "2022-01-14",
+      "arrival_date": "2022-01-25",
+      "sailing_code": "LEG3"
+    }
+  ],
+  "rates": [
+    { "sailing_code": "DIR1", "rate": "500.00", "rate_currency": "EUR" },
+    { "sailing_code": "TWO1", "rate": "350.00", "rate_currency": "EUR" },
+    { "sailing_code": "LEG1", "rate": "100.00", "rate_currency": "EUR" },
+    { "sailing_code": "LEG2", "rate": "100.00", "rate_currency": "EUR" },
+    { "sailing_code": "LEG3", "rate": "100.00", "rate_currency": "EUR" }
+  ],
+  "exchange_rates": {}
+}

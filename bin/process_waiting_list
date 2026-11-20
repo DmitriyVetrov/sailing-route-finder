@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# One pass over the waiting list (saved searches): every saved search the current feed can now
+# serve moves to notifications. Run by bin/watch_feed; everything goes to the log.
+
+require_relative "../lib/route_finder"
+
+app = RouteFinder::Application.new(RouteFinder::Application.feed_path_from(ENV), "process_waiting_list")
+
+fulfilled_names = app.waiting_list.process(app.factory, app.presenter, app.logger)
+app.logger.info("Waiting list processed: #{fulfilled_names.length} fulfilled")
